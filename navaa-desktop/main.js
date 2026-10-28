@@ -16,7 +16,7 @@ function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true }
   });
   win.setMenuBarVisibility(false);
-  win.loadFile(path.join(__dirname, 'index.html'));
+  win.loadFile(path.join(__dirname, 'NAVAA_calendar_updated.html'));
   // Never let the page block you from closing the app.
   win.webContents.on('will-prevent-unload', (e) => e.preventDefault());
   win.on('closed', () => { win = null; stopWatch(); });
