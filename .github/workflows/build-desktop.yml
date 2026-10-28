@@ -16,6 +16,10 @@ jobs:
         with:
           node-version: 20
 
+      - name: Copy NAVAA interface
+        working-directory: navaa-desktop
+        run: node -e "require('fs').copyFileSync('../NAVAA_calendar_updated.html', 'index.html')"
+
       - name: Install dependencies
         working-directory: navaa-desktop
         run: npm install
@@ -29,6 +33,7 @@ jobs:
         with:
           name: NAVAA-Windows
           path: navaa-desktop/dist/*
+          if-no-files-found: error
 
   build-macos:
     runs-on: macos-latest
@@ -41,6 +46,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Copy NAVAA interface
+        working-directory: navaa-desktop
+        run: node -e "require('fs').copyFileSync('../NAVAA_calendar_updated.html', 'index.html')"
 
       - name: Install dependencies
         working-directory: navaa-desktop
@@ -55,3 +64,4 @@ jobs:
         with:
           name: NAVAA-macOS
           path: navaa-desktop/dist/*
+          if-no-files-found: error
