@@ -1,0 +1,29 @@
+{
+  "name": "navaa",
+  "version": "1.0.0",
+  "description": "NAVAA focus app",
+  "author": "NAVAA",
+  "main": "main.js",
+  "scripts": {
+    "dist": "electron-builder --publish never"
+  },
+  "dependencies": {
+    "active-win": "8.2.1"
+  },
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "24.13.3"
+  },
+  "build": {
+    "appId": "com.navaa.desktop",
+    "productName": "NAVAA",
+    "asarUnpack": ["node_modules/active-win/**"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "mac": {
+      "identity": null,
+      "target": [{ "target": "zip", "arch": ["x64", "arm64"] }]
+    }
+  }
+}
