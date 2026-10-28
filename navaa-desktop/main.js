@@ -59,11 +59,12 @@ function hideOverlay() {
 async function check() {
   if (state.phase !== 'focus') return hideOverlay();
   let w = null;
-  try {
+    try {
     const activeWindow = (await import('active-win')).default;
     w = await activeWindow();
   } catch (e) {
     console.error('NAVAA window detection failed:', e);
+  }
   }
   if (!w) return;
   if (w.owner && w.owner.processId === process.pid) return; // our own windows: leave things as they are
