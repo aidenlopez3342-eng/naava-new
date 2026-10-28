@@ -17,6 +17,13 @@
   "build": {
     "appId": "com.navaa.desktop",
     "productName": "NAVAA",
+    "files": [
+  "main.js",
+  "preload.js",
+  "index.html",
+  "package.json",
+  "node_modules/**/*"
+],
     "asarUnpack": ["node_modules/active-win/**"],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }]
