@@ -1,0 +1,57 @@
+name: Build NAVAA Desktop
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: navaa-desktop
+        run: npm install
+
+      - name: Build Windows app
+        working-directory: navaa-desktop
+        run: npm run dist
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: NAVAA-Windows
+          path: navaa-desktop/dist/*
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: navaa-desktop
+        run: npm install
+
+      - name: Build macOS app
+        working-directory: navaa-desktop
+        run: npm run dist
+
+      - name: Upload macOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: NAVAA-macOS
+          path: navaa-desktop/dist/*
