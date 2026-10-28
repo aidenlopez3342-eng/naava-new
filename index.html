@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAVAA — Catch the moment before it slips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14152B;--ink2:#1D1E3B;--ink3:#262848;--paper:#F7F5F0;--ember:#FF8A3D;--teal:#4ECDC4;--coral:#FF5470;--slate:#9296AC;--dim:#5B5E78;--line:rgba(255,255,255,.08);--d:'Space Grotesk',sans-serif;--m:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--ink);color:var(--paper);font-family:'Inter',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:inherit}
+.hide{display:none!important}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+h1{font:700 34px/1.15 var(--d)}
+h2{font:600 22px var(--d);margin-bottom:14px}
+.eyebrow{font:12px var(--m);letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;display:block}
+.lead{color:var(--slate);font-size:15px;max-width:560px;margin-top:8px;line-height:1.55}
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:22px}
+.btn{padding:11px 18px;border-radius:11px;font-weight:600;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s}
+.btn:active{transform:scale(.96)}
+.b-p{background:var(--ember);color:var(--ink);flex:1}
+.b-g{background:var(--ink3);color:var(--paper);flex:1}
+.b-t{background:var(--teal);color:var(--ink)}
+.b-o{border:1px solid var(--line)}
+/* auth */
+#auth{position:fixed;inset:0;z-index:200;background:var(--ink);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
+#auth .aw{width:100%;max-width:400px}
+.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--ember),var(--coral));display:flex;align-items:center;justify-content:center;font:700 20px var(--d);color:var(--ink);margin-bottom:22px}
+#auth h1{font-size:30px}
+.tabs{display:flex;gap:4px;background:var(--ink);border-radius:11px;padding:4px;margin-bottom:18px}
+.tab{flex:1;padding:9px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--slate)}
+.tab[aria-selected=true]{background:var(--ember);color:var(--ink)}
+#auth label{display:block;font-size:12.5px;color:var(--slate);margin:14px 0 6px}
+#auth input{width:100%;background:var(--ink3);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px}
+.err{min-height:20px;margin-top:12px;font-size:13px;color:var(--coral)}
+.guest{display:block;margin:18px auto 0;font-size:13px;color:var(--slate);text-decoration:underline}
+/* shell */
+.shell{display:grid;grid-template-columns:88px 1fr;height:100vh;height:100dvh}
+.rail{background:var(--ink2);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:22px 0;gap:6px}
+.rail .logo{width:40px;height:40px;font-size:18px;margin-bottom:16px}
+.nav{width:56px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:14px;color:var(--slate);font-size:10px;font-weight:600;text-align:center;line-height:1.1}
+.nav i{font-style:normal;font-size:19px}
+.nav:hover{background:var(--ink3);color:var(--paper)}
+.nav.on{background:var(--ember);color:var(--ink)}
+.main{overflow-y:auto;padding:36px 44px 80px}
+.scr{display:none;animation:up .35s ease}
+.scr.on{display:block}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(max-width:760px){
+.shell{grid-template-columns:1fr;grid-template-rows:1fr 68px}
+.rail{order:2;flex-direction:row;justify-content:space-around;border-right:0;border-top:1px solid var(--line);padding:8px 4px;gap:0}
+.rail .logo{display:none}.nav{width:48px}.main{padding:22px 18px 30px}}
+.top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:28px}
+.who{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--slate)}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start}
+@media(max-width:900px){.grid,.tl{grid-template-columns:1fr!important}}
+.pc{display:flex;flex-direction:column;align-items:center;text-align:center;padding:30px 22px}
+.ring{position:relative;width:220px;height:220px;margin:6px 0 10px}
+.ring svg{transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.num{font:700 38px var(--m)}
+.sm{font-size:11px;color:var(--slate);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.row{display:flex;gap:10px;width:100%;margin-top:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.stat{background:var(--ink2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.stat b{font:700 24px var(--m);color:var(--ember);display:block}
+.stat span{font-size:11.5px;color:var(--slate)}
+.next{display:flex;align-items:center;gap:14px;padding:14px;border-radius:12px;background:var(--ink3);margin-top:10px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.high{background:var(--coral)}.med{background:var(--ember)}.low{background:var(--teal)}
+.slump{display:flex;gap:14px;padding:16px 18px;border-radius:14px;background:linear-gradient(90deg,rgba(255,84,112,.14),rgba(255,84,112,.02));border:1px solid rgba(255,84,112,.25);margin-top:16px;font-size:13px}
+.slump p{font-size:12.5px;color:var(--slate);margin-top:2px}
+.tl{display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start}
+.tf{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.tf input,.tf select{background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13.5px}
+.tf input{flex:1;min-width:180px}
+.list{display:flex;flex-direction:column;gap:10px}
+.task{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;background:var(--ink2);border:1px solid var(--line)}
+.task.done{opacity:.45}.task.done .tt{text-decoration:line-through}
+.chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--dim);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:var(--ink)}
+.chk.on{background:var(--teal);border-color:var(--teal)}
+.tt{flex:1;font-size:14px}
+.tag{font:10.5px var(--m);padding:4px 8px;border-radius:7px;background:var(--ink3);color:var(--slate)}
+.x{color:var(--slate);padding:2px 6px}.x:hover{color:var(--coral)}
+.empty{padding:40px 20px;text-align:center;color:var(--slate);font-size:13.5px}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font:600 15px var(--d)}
+.ch button{color:var(--slate);font-size:18px;padding:4px 8px}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.dow{font:10px var(--m);color:var(--dim);padding-bottom:6px}
+.cd{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:12.5px;position:relative}
+.cd.t{background:var(--ember);color:var(--ink);font-weight:700}
+.cd.h::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--teal)}
+.cd.t.h::after{background:var(--ink)}
+.tp{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:var(--ink3);font-size:13px;cursor:pointer;border:1px solid transparent;margin-top:8px}
+.tp.on{border-color:var(--teal);background:rgba(78,205,196,.08)}
+.focus{display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 0 40px}
+.chips{display:flex;gap:10px;margin:22px 0 4px;flex-wrap:wrap;justify-content:center}
+.chip{padding:9px 16px;border-radius:20px;background:var(--ink2);border:1px solid var(--line);font-size:13px}
+.chip:disabled,.btn:disabled{opacity:.45;cursor:not-allowed}
+.chip.on{background:var(--teal);color:var(--ink);border-color:var(--teal);font-weight:600}
+.tr{position:relative;width:280px;height:280px;margin:20px 0}
+.tr svg{transform:rotate(-90deg)}
+.tr .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.tm{font:700 44px var(--m)}
+.quote{margin-top:26px;max-width:420px;color:var(--slate);font-size:13.5px;font-style:italic}
+.modal{position:fixed;inset:0;background:rgba(10,10,20,.72);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal.on{display:flex}
+.mb{background:var(--ink2);border:1px solid var(--line);border-radius:20px;padding:30px;max-width:400px;width:100%;text-align:center}
+.mb h3{font:600 19px var(--d);margin-bottom:8px}
+.mb p{color:var(--slate);font-size:13.5px;line-height:1.5;margin-bottom:22px}
+.ico{width:56px;height:56px;border-radius:50%;background:rgba(255,84,112,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px}
+.col{display:flex;flex-direction:column;gap:10px}
+.prog{display:flex;gap:6px;justify-content:center;margin-bottom:18px}
+.prog i{width:24px;height:4px;border-radius:3px;background:var(--ink3)}
+.prog i.a{background:var(--teal)}.prog i.f{background:var(--dim)}
+.q{font:600 17px var(--d);margin-bottom:18px;text-align:left}
+.opt{text-align:left;padding:13px 16px;border-radius:12px;background:var(--ink3);border:1px solid transparent;font-size:13.5px}
+.opt:hover{border-color:var(--teal)}
+.big{font:700 42px var(--m);color:var(--teal)}
+.lv{display:flex;align-items:center;gap:18px}
+.lb{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--ember),var(--coral));display:flex;align-items:center;justify-content:center;font:700 22px var(--m);color:var(--ink);flex-shrink:0}
+.bar{height:10px;border-radius:6px;background:var(--ink);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--ember));transition:width .5s}
+.path{margin-top:40px;max-width:420px}
+.pn{display:flex;align-items:center;gap:16px;padding:12px 0}
+.pn .pc2{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 16px var(--m);border:2px solid var(--ink3);background:var(--ink2);color:var(--dim);flex-shrink:0}
+.pn.d .pc2{background:var(--teal);border-color:var(--teal);color:var(--ink)}
+.pn.c .pc2{background:var(--ember);border-color:var(--ember);color:var(--ink);box-shadow:0 0 0 6px rgba(255,138,61,.15)}
+.pn b{font-size:14.5px;display:block}.pn span{font-size:12px;color:var(--slate)}
+.streak{display:flex;gap:8px;margin-top:18px}
+.sd{flex:1;aspect-ratio:1;border-radius:10px;background:var(--ink2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;font-size:11px;color:var(--slate);border:1px solid var(--line)}
+.sd.l{background:rgba(255,138,61,.15);border-color:var(--ember);color:var(--ember)}
+.bg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.badge{text-align:center;opacity:.4}
+.badge.u{opacity:1}
+.bi{width:60px;height:60px;border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:26px;background:var(--ink3)}
+.badge.u .bi{background:linear-gradient(135deg,var(--ember),var(--coral))}
+.badge h4{font-size:14px;margin-bottom:4px}.badge p{font-size:11.5px;color:var(--slate)}
+.cs{display:flex;align-items:center;gap:20px;padding:24px;margin-bottom:22px;background:linear-gradient(90deg,rgba(78,205,196,.1),rgba(78,205,196,.01));border-color:rgba(78,205,196,.2)}
+.cs .big{font-size:40px}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.mt{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.av{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:700 14px var(--d);color:var(--ink)}
+.mt b{font-size:13.5px;display:block}.mt span{font-size:11px;color:var(--dim)}
+.mx{font-size:13px;color:var(--slate);line-height:1.5}
+.mtag{display:inline-block;margin-top:10px;font:10.5px var(--m);padding:3px 9px;border-radius:6px;background:var(--ink3);color:var(--teal)}
+.post{position:sticky;bottom:0;margin-top:26px;padding:16px 20px;background:var(--ink2);border:1px solid var(--line);border-radius:14px;display:flex;gap:12px}
+.post input{flex:1;background:var(--ink3);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+.pr{text-align:center;max-width:560px;margin:0 auto 30px}.pr .lead{margin:10px auto 0}
+.bt{display:flex;gap:4px;background:var(--ink2);border:1px solid var(--line);border-radius:12px;padding:4px;width:fit-content;margin:0 auto 34px}
+.bo{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;color:var(--slate);position:relative}
+.bo.on{background:var(--ember);color:var(--ink)}
+.bo small{position:absolute;top:-10px;right:-6px;background:var(--teal);color:var(--ink);font:700 9px var(--m);padding:2px 6px;border-radius:6px;white-space:nowrap}
+.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:760px;margin:0 auto}
+@media(max-width:760px){.pg{grid-template-columns:1fr}}
+.pcard{padding:28px 26px;position:relative;display:flex;flex-direction:column}
+.pcard.f{border-color:var(--ember);background:linear-gradient(160deg,rgba(255,138,61,.08),var(--ink2) 60%)}
+.ft{position:absolute;top:-12px;left:26px;background:var(--ember);color:var(--ink);font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:7px}
+.amt{font:700 36px var(--m);margin-top:8px}.amt small{font:400 13px 'Inter';color:var(--slate)}
+.fl{list-style:none;margin:20px 0;display:flex;flex-direction:column;gap:10px;flex:1;font-size:13px}
+.fl li::before{content:'✓ ';color:var(--teal)}
+.cmp{margin:50px auto 0;max-width:640px}
+.cr{display:grid;grid-template-columns:1fr 90px 90px;padding:12px 6px;border-bottom:1px solid var(--line);font-size:13px}
+.cr div+div{text-align:center}.cr .y{color:var(--teal)}.cr .n{color:var(--dim)}
+.cr.h{color:var(--slate);font:11px var(--m);text-transform:uppercase}
+.fam{max-width:640px;margin:44px auto 0;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<!-- ============ SIGN IN ============ -->
+<div id="auth" class="hide" role="dialog" aria-modal="true" aria-label="Sign in">
+  <div class="aw">
+    <div class="logo">N</div>
+    <h1 id="aT">Welcome back.</h1>
+    <p class="lead" id="aS">Sign in to pick up your tasks, streak and level right where you left them.</p>
+    <div class="card" style="margin-top:26px">
+      <div class="tabs" role="tablist">
+        <button class="tab" id="tIn" role="tab" aria-selected="true">Sign in</button>
+        <button class="tab" id="tUp" role="tab" aria-selected="false">Create account</button>
+      </div>
+      <form id="aF" novalidate>
+        <div id="aNr" class="hide"><label for="aN">Your name</label><input id="aN" type="text" autocomplete="name" maxlength="40"></div>
+        <label for="aE">Email</label><input id="aE" type="email" autocomplete="email">
+        <label for="aP">Password</label><input id="aP" type="password" autocomplete="current-password">
+        <div class="err" id="aErr" role="alert" aria-live="polite"></div>
+        <button class="btn b-t" id="aGo" type="submit" style="width:100%">Sign in</button>
+      </form>
+      <button class="guest" id="aG" type="button">Continue as guest</button>
+    </div>
+    <p style="margin-top:20px;font-size:11.5px;color:var(--slate);text-align:center">Accounts are saved in this browser only, so they won't follow you to another device.</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="shell hide" id="app">
+  <nav class="rail" aria-label="Main navigation">
+    <div class="logo">N</div>
+    <button class="nav on" data-s="home"><i>🏠</i>Home</button>
+    <button class="nav" data-s="tasks"><i>📅</i>Tasks</button>
+    <button class="nav" data-s="focus"><i>🎯</i>Focus</button>
+    <button class="nav" data-s="progress"><i>📈</i>Progress</button>
+    <button class="nav" data-s="wins"><i>🏅</i>Wins</button>
+    <button class="nav" data-s="together"><i>🤝</i>Not Alone</button>
+    <button class="nav" data-s="premium"><i>⭐</i>Premium</button>
+  </nav>
+
+  <main class="main" id="main">
+    <!-- HOME -->
+    <section class="scr on" id="s-home">
+      <div class="top">
+        <div>
+          <span class="eyebrow">Today</span>
+          <h1 id="greet">Hey — how's your energy?</h1>
+          <p class="lead">NAVAA catches you the moment focus slips, not hours later. Check your energy and pick your next move.</p>
+        </div>
+        <div class="who"><span id="who"></span><button class="btn b-o" id="out" style="padding:8px 14px">Sign out</button></div>
+      </div>
+      <div class="grid">
+        <div class="card pc">
+          <span class="eyebrow" style="align-self:flex-start">Energy Pulse</span>
+          <div class="ring">
+            <svg viewBox="0 0 220 220" width="220" height="220">
+              <defs><linearGradient id="gr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ECDC4"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient></defs>
+              <circle cx="110" cy="110" r="94" fill="none" stroke="#262848" stroke-width="12"/>
+              <circle id="eFg" cx="110" cy="110" r="94" fill="none" stroke="url(#gr)" stroke-width="12" stroke-linecap="round" stroke-dasharray="590.6" stroke-dashoffset="590.6" style="transition:stroke-dashoffset .6s"/>
+            </svg>
+            <div class="c"><div class="num" id="eNum">72</div><div class="sm">out of 100</div></div>
+          </div>
+          <div id="eMsg" style="font-size:14px;color:var(--slate);max-width:230px"></div>
+          <button class="btn b-t" id="chk" style="width:100%;margin-top:14px">Check My Energy</button>
+          <div class="row">
+            <button class="btn b-p" data-go="focus">Start Focus Session</button>
+            <button class="btn b-g" id="rech">Quick Recharge</button>
+          </div>
+        </div>
+        <div>
+          <div class="stats">
+            <div class="stat"><b id="sLv">1</b><span>Current level</span></div>
+            <div class="stat"><b id="sSt">0</b><span>Day streak</span></div>
+            <div class="stat"><b id="sTk">0</b><span>Tasks done today</span></div>
+          </div>
+          <div class="card">
+            <h2 style="margin-bottom:6px">Up next</h2>
+            <p style="font-size:12.5px;color:var(--slate)">Your highest-priority unfinished task</p>
+            <div id="nextBox"></div>
+          </div>
+          <div class="slump hide" id="slump"><div>⚡</div><div><b>This is usually a slump window for you.</b><p>A lot of students hit a wall around now — a 5-minute reset can turn it around.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TASKS -->
+    <section class="scr" id="s-tasks">
+      <span class="eyebrow">Plan</span>
+      <h1>Tasks, ranked by what actually matters</h1>
+      <p class="lead" style="margin-bottom:24px">Add a task, set its priority, and tag when you focus best. NAVAA sorts by priority first, your peak time second.</p>
+      <div class="tl">
+        <div>
+          <form class="tf" id="tf">
+            <input type="text" id="tIn2" placeholder="What do you need to get done?" required>
+            <select id="tPr"><option value="high">High priority</option><option value="med" selected>Medium priority</option><option value="low">Low priority</option></select>
+            <select id="tTm"><option value="morning">Morning</option><option value="afternoon">Afternoon</option><option value="evening" selected>Evening</option><option value="night">Late night</option></select>
+            <button class="btn b-p" type="submit" style="flex:none">Add task</button>
+          </form>
+          <h2>To-do list</h2>
+          <div class="list" id="tList"></div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="ch"><button id="cPrev" aria-label="Previous month">‹</button><span id="cTitle"></span><button id="cNext" aria-label="Next month">›</button></div>
+            <div class="cg" id="cGrid"></div>
+          </div>
+          <div class="card" style="margin-top:18px">
+            <h2 style="font-size:15px;margin-bottom:2px">When are you sharpest?</h2>
+            <p style="font-size:12px;color:var(--slate)">Tap the window that fits — NAVAA will nudge your high-priority tasks there.</p>
+            <div id="tPick"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOCUS -->
+    <section class="scr" id="s-focus">
+      <span class="eyebrow">Recover</span>
+      <h1>Pick a session, not a promise</h1>
+      <p class="lead">Short, real sessions with a built-in break — because forcing focus after collapse never works.</p>
+      <div class="focus">
+        <div class="chips">
+          <button class="chip on" data-m="25">25 min · Deep work</button>
+          <button class="chip" data-m="10">10 min · Quick reset</button>
+          <button class="chip" data-m="5">5 min · Just breathe</button>
+        </div>
+        <div class="tr">
+          <svg viewBox="0 0 280 280" width="280" height="280">
+            <circle cx="140" cy="140" r="120" fill="none" stroke="#1D1E3B" stroke-width="10"/>
+            <circle id="tFg" cx="140" cy="140" r="120" fill="none" stroke="#4ECDC4" stroke-width="10" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="0" style="transition:stroke-dashoffset 1s linear"/>
+          </svg>
+          <div class="c"><div class="tm" id="tTime">25:00</div><div class="sm" id="tPhase">Ready</div></div>
+        </div>
+        <div class="row" style="width:auto;margin:0;flex-wrap:wrap;justify-content:center"><button class="btn b-p" id="tGo" style="min-width:110px;flex:none">Start</button><button class="btn b-t" id="tBrk" disabled>Take a break</button><button class="btn b-g" id="tRst" style="flex:none">Reset</button></div>
+        <div class="quote" id="quote">"You don't need more willpower. You need a shorter runway to a real break."</div>
+        <p style="margin-top:30px;font-size:12.5px;color:var(--slate);max-width:380px">While a session is running, leaving this page will bring up a reminder. You get one break per session.</p>
+      </div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section class="scr" id="s-progress">
+      <span class="eyebrow">Growth</span>
+      <h1>Your path</h1>
+      <p class="lead">Every focus session and finished task moves you forward. No cramming required — just showing up when it's hard.</p>
+      <div class="card" style="margin-top:24px">
+        <div class="lv">
+          <div class="lb" id="lBadge">1</div>
+          <div style="flex:1">
+            <h2 style="margin-bottom:2px">Level <span id="lNum">1</span> — <span id="lName"></span></h2>
+            <span style="font-size:12.5px;color:var(--slate)"><span id="xpN">0</span> / 100 XP to next level</span>
+            <div class="bar"><i id="xpBar" style="width:0"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="path" id="path"></div>
+    </section>
+
+    <!-- WINS -->
+    <section class="scr" id="s-wins">
+      <span class="eyebrow">Wins</span>
+      <h1>Achievements</h1>
+      <p class="lead">Small, real wins — logged so you can actually see the effort you put in this week.</p>
+      <h2 style="margin-top:28px">This week's streak</h2>
+      <div class="streak" id="streak"></div>
+      <h2 style="margin-top:30px">Badges</h2>
+      <div class="bg" id="badges"></div>
+    </section>
+
+    <!-- TOGETHER -->
+    <section class="scr" id="s-together">
+      <span class="eyebrow">Together</span>
+      <h1>You're not the only one</h1>
+      <p class="lead" style="margin-bottom:24px">Anonymous, real moments from students, interns, and staff who hit the same wall today.</p>
+      <div class="card cs"><div class="big">68%</div><div><b style="font-size:14px">of NAVAA users hit a focus slump between 2–4 PM</b><p style="font-size:12.5px;color:var(--slate);margin-top:4px">You're on schedule, not behind. Everyone's runway gets short around the same time.</p></div></div>
+      <h2>Right now, someone else is...</h2>
+      <div class="mg" id="moments"></div>
+      <div class="post"><input type="text" id="mIn" maxlength="200" placeholder="Share your moment anonymously (e.g. 'stuck after back-to-back classes')"><button class="btn b-t" id="mPost">Post</button></div>
+    </section>
+
+    <!-- PREMIUM -->
+    <section class="scr" id="s-premium">
+      <div class="pr"><span class="eyebrow">Go Further</span><h1>NAVAA Premium</h1><p class="lead">The free plan catches the collapse moment. Premium keeps it from happening as often — deeper sessions, smarter reminders, and the full path.</p></div>
+      <div class="bt" id="bt">
+        <button class="bo on" data-p="m">Monthly</button>
+        <button class="bo" data-p="q">3 Months<small>SAVE 20%</small></button>
+        <button class="bo" data-p="y">Yearly<small>SAVE 60%</small></button>
+      </div>
+      <div class="pg">
+        <div class="card pcard"><h3>Free</h3><div class="amt">₹0</div><div style="font-size:12px;color:var(--slate)">Always free</div>
+          <ul class="fl"><li>Energy check-in &amp; meter</li><li>Priority to-do list &amp; calendar</li><li>1 focus session mode (25 min)</li><li>Community page</li><li>First 3 achievement badges</li></ul>
+          <button class="btn b-g" disabled>Current plan</button></div>
+        <div class="card pcard f"><span class="ft">MOST POPULAR</span><h3>Premium</h3><div class="amt" id="pAmt">₹99<small>/month</small></div><div style="font-size:12px;color:var(--slate)" id="pSub">Billed monthly, cancel anytime</div>
+          <ul class="fl"><li>Everything in Free, plus:</li><li>All focus modes + custom timers</li><li>Smart break reminders tuned to your slump times</li><li>Pop-up warning before distracting apps</li><li>Full level path + unlimited XP tracking</li><li>Personalized "best focus window" insights</li><li>Full badge &amp; streak history</li><li>Ad-free, priority support</li></ul>
+          <button class="btn b-p" id="pCta" style="flex:none">Upgrade to Premium</button></div>
+      </div>
+      <div class="card fam"><div><h3>Family &amp; Class plan</h3><p style="font-size:12.5px;color:var(--slate);max-width:380px;margin-top:4px">Up to 6 accounts on one subscription — built for siblings, study groups, or a tuition batch.</p></div>
+        <div style="text-align:right"><div class="amt" style="font-size:26px;margin:0">₹149<small>/month</small></div><button class="btn b-o" style="margin-top:10px">Get the family plan</button></div></div>
+      <div class="cmp"><h2 style="text-align:center">What changes with Premium</h2>
+        <div class="cr h"><div>Feature</div><div>Free</div><div>Premium</div></div>
+        <div class="cr"><div>Energy check-in</div><div class="y">✓</div><div class="y">✓</div></div>
+        <div class="cr"><div>Priority to-do + calendar</div><div class="y">✓</div><div class="y">✓</div></div>
+        <div class="cr"><div>Focus session modes</div><div class="n">1 mode</div><div class="y">All modes</div></div>
+        <div class="cr"><div>Smart break reminders</div><div class="n">—</div><div class="y">✓</div></div>
+        <div class="cr"><div>Distraction pop-up warning</div><div class="n">—</div><div class="y">✓</div></div>
+        <div class="cr"><div>Level path</div><div class="n">Levels 1–3</div><div class="y">Full path</div></div>
+        <div class="cr"><div>Achievement badges</div><div class="n">3 badges</div><div class="y">All badges</div></div>
+        <div class="cr"><div>Ads</div><div class="n">Occasional</div><div class="y">None</div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="dModal"><div class="mb"><div class="ico">⏸</div><h3>Hold on — you're mid-focus</h3><p id="dText"></p>
+  <div class="col"><button class="btn b-p" id="dStay" style="flex:none">Go back</button><button class="btn b-g" id="dBreak" style="flex:none">Take a break</button></div></div></div>
+<div class="modal" id="cModal"><div class="mb"><div class="prog" id="cProg"></div><div id="cBody"></div></div></div>
+
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const get = k => { try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } };
+const put = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+const DAY = 864e5, today = () => new Date().toDateString();
+const session = get('navaa_session');
+
+/* ============ AUTH ============ */
+let mode = 'in';
+function setMode(m){
+  mode = m; const up = m === 'up';
+  $('tIn').setAttribute('aria-selected', !up); $('tUp').setAttribute('aria-selected', up);
+  $('aNr').classList.toggle('hide', !up);
+  $('aGo').textContent = up ? 'Create account' : 'Sign in';
+  $('aP').autocomplete = up ? 'new-password' : 'current-password';
+  $('aT').textContent = up ? 'Start where you are.' : 'Welcome back.';
+  $('aS').textContent = up ? 'Make an account and NAVAA will keep your progress for you.' : 'Sign in to pick up your tasks, streak and level right where you left them.';
+  $('aErr').textContent = '';
+}
+$('tIn').onclick = () => setMode('in');
+$('tUp').onclick = () => setMode('up');
+async function hash(pw, salt){
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:enc.encode(salt), iterations:100000, hash:'SHA-256'}, key, 256);
+  return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function enter(s){ put('navaa_session', s); location.reload(); }
+$('aF').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = $('aE').value.trim().toLowerCase(), pw = $('aP').value, err = $('aErr');
+  err.textContent = '';
+  if(!/^\S+@\S+\.\S+$/.test(email)){ err.textContent = 'Enter a valid email address.'; return; }
+  if(!(window.crypto && crypto.subtle)){ err.textContent = 'Sign-in needs a secure (https) connection.'; return; }
+  const users = get('navaa_users') || {};
+  $('aGo').disabled = true;
+  try{
+    if(mode === 'up'){
+      if(pw.length < 8){ err.textContent = 'Use at least 8 characters for your password.'; return; }
+      if(users[email]){ err.textContent = 'That email already has an account. Try signing in.'; return; }
+      const salt = [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2,'0')).join('');
+      const name = $('aN').value.trim() || email.split('@')[0];
+      users[email] = {name, salt, hash: await hash(pw, salt)};
+      put('navaa_users', users);
+      enter({email, name});
+    }else{
+      const u = users[email];
+      if(!u || u.hash !== await hash(pw, u.salt)){ err.textContent = 'Email or password doesn’t match.'; return; }
+      enter({email, name:u.name});
+    }
+  }catch(x){ err.textContent = 'Something went wrong. Please try again.'; }
+  finally{ $('aGo').disabled = false; }
+});
+$('aG').onclick = () => enter({guest:true, name:'Guest'});
+
+if(!session){ $('auth').classList.remove('hide'); return; }
+$('auth').classList.add('hide');
+$('app').classList.remove('hide');
+
+/* ============ STATE ============ */
+const KEY = session.guest ? 'surge_state' : 'navaa_state_' + session.email;
+const fresh = () => ({energy:72, level:1, xp:0, streakDays:[], tasks:[], peakTime:'afternoon', lastVisit:null, focusSessions:0, moments:[]});
+const now = new Date();
+let calM = now.getMonth(), calY = now.getFullYear();
+let state = Object.assign(fresh(), get(KEY) || {});
+const save = () => put(KEY, state);
+if(state.lastVisit !== today()){
+  state.energy = Math.min(state.energy, Math.max(40, state.energy - 8));
+  state.lastVisit = today(); save();
+}
+const LEVELS = ["Getting Started","Warming Up","Finding Rhythm","In The Zone","Steady Grinder","Deep Focuser","Momentum Builder","Consistency Pro","Flow State","NAVAA Master"];
+const mark = () => { if(!state.streakDays.includes(today())) state.streakDays.push(today()); };
+function addXP(n){
+  state.xp += n;
+  while(state.xp >= 100){ state.xp -= 100; state.level++; }
+  mark(); save(); renderProgress(); renderHome();
+}
+function streak(){
+  let c = 0, d = new Date();
+  if(!state.streakDays.includes(d.toDateString())) d = new Date(d.getTime() - DAY);
+  while(state.streakDays.includes(d.toDateString())){ c++; d = new Date(d.getTime() - DAY); }
+  return c;
+}
+const rank = {high:0, med:1, low:2};
+const byPriority = (a,b) => rank[a.priority] - rank[b.priority];
+
+/* ============ NAVIGATION ============ */
+function go(name){
+  document.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s.id === 's-' + name));
+  document.querySelectorAll('.nav').forEach(b => b.classList.toggle('on', b.dataset.s === name));
+  $('main').scrollTop = 0;
+  if(name === 'progress') renderProgress();
+  if(name === 'wins') renderWins();
+  if(name === 'together') renderMoments();
+  if(name === 'tasks') renderCal();
+}
+document.querySelectorAll('.nav').forEach(b => b.onclick = () => go(b.dataset.s));
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+$('who').textContent = session.guest ? 'Guest' : (session.name || session.email);
+$('out').textContent = session.guest ? 'Sign in' : 'Sign out';
+$('out').onclick = () => { try{ localStorage.removeItem('navaa_session'); }catch(e){} location.reload(); };
+
+/* ============ HOME ============ */
+const CIRC = 2 * Math.PI * 94;
+function renderHome(){
+  const e = Math.max(0, Math.min(100, state.energy));
+  $('eNum').textContent = Math.round(e);
+  $('eFg').style.strokeDashoffset = CIRC - e / 100 * CIRC;
+  $('eMsg').textContent = e < 35 ? "Running low. A real break beats forcing it right now."
+    : e < 60 ? "Dipping. A quick reset now saves you an hour later."
+    : "Solid focus zone. Good time to tackle a real task.";
+  $('sLv').textContent = state.level;
+  $('sSt').textContent = streak();
+  $('sTk').textContent = state.tasks.filter(t => t.done && t.date === today()).length;
+  const open = state.tasks.filter(t => !t.done).sort(byPriority);
+  $('nextBox').innerHTML = open.length
+    ? `<div class="next"><span class="dot ${open[0].priority}"></span><div><div style="font-size:13.5px">${esc(open[0].text)}</div><div style="font-size:11px;color:var(--slate);margin-top:2px">Best around your ${open[0].time} window</div></div></div>`
+    : `<div class="empty" style="padding:14px 0">Nothing queued — add a task or just breathe.</div>`;
+  const h = new Date().getHours();
+  $('greet').textContent = h < 12 ? "Morning. Let's start before the day pulls you under."
+    : h < 17 ? "Afternoon slump zone — let's check your energy."
+    : h < 21 ? "Evening stretch. One more focused push?"
+    : "Late night. Be honest with your energy right now.";
+  $('slump').classList.toggle('hide', !(h >= 14 && h <= 16));
+}
+$('rech').onclick = () => { state.energy = Math.min(100, state.energy + 18); mark(); save(); renderHome(); };
+
+/* ============ ENERGY CHECK-IN ============ */
+const QS = [
+  {q:"How's your focus right now?", o:[["Sharp — I'm locked in",90],["A bit foggy, but working",60],["Really scattered",25]]},
+  {q:"When did you last take a real break?", o:[["Within the last hour",85],["A few hours ago",50],["I honestly can't remember",15]]},
+  {q:"What are your open tabs doing right now?", o:[["All helping me work",90],["Mixed — some work, some scrolling",50],["Mostly distracting me",20]]},
+  {q:"How's your body feeling — hungry, sleepy, tense?", o:[["Fine, nothing pulling at me",85],["A little hungry or tired",50],["Running on empty",15]]}
+];
+let step = 0, scores = [];
+function dots(){ $('cProg').innerHTML = QS.map((_,i) => `<i class="${i < step ? 'f' : i === step ? 'a' : ''}"></i>`).join(''); }
+function ask(){
+  const q = QS[step]; dots();
+  $('cBody').innerHTML = `<div class="q">${esc(q.q)}</div><div class="col">${q.o.map((o,i) => `<button class="opt" data-i="${i}">${esc(o[0])}</button>`).join('')}</div>`;
+  $('cBody').querySelectorAll('.opt').forEach(b => b.onclick = () => {
+    scores.push(q.o[+b.dataset.i][1]); step++;
+    step < QS.length ? ask() : finish();
+  });
+}
+function finish(){
+  const avg = Math.round(scores.reduce((a,b) => a + b, 0) / scores.length);
+  state.energy = avg; mark(); save(); renderHome(); dots();
+  const [icon, msg] = avg < 35 ? ["🪫","You're running on empty. A real break beats pushing through."]
+    : avg < 60 ? ["🔋","You're dipping. A quick reset now will save you time later."]
+    : ["⚡","You're in a solid spot. Good time to tackle something real."];
+  $('cBody').innerHTML = `<div class="ico" style="background:rgba(78,205,196,.15)">${icon}</div><div class="big">${avg}</div><p style="margin-top:6px">${msg}</p><div class="col"><button class="btn b-p" id="cFocus" style="flex:none">Start a focus session</button><button class="btn b-g" id="cClose" style="flex:none">Close</button></div>`;
+  $('cFocus').onclick = () => { $('cModal').classList.remove('on'); go('focus'); };
+  $('cClose').onclick = () => $('cModal').classList.remove('on');
+}
+$('chk').onclick = () => { step = 0; scores = []; ask(); $('cModal').classList.add('on'); };
+$('cModal').onclick = e => { if(e.target === $('cModal')) $('cModal').classList.remove('on'); };
+
+/* ============ TASKS ============ */
+$('tf').addEventListener('submit', e => {
+  e.preventDefault();
+  const text = $('tIn2').value.trim(); if(!text) return;
+  state.tasks.push({id:'t' + Date.now(), text, priority:$('tPr').value, time:$('tTm').value, done:false, date:today()});
+  $('tIn2').value = ''; save(); renderTasks(); renderHome(); renderCal();
+});
+function renderTasks(){
+  const list = [...state.tasks].sort((a,b) => a.done !== b.done ? (a.done ? 1 : -1) : byPriority(a,b));
+  $('tList').innerHTML = list.length ? list.map(t => `
+    <div class="task ${t.done ? 'done' : ''}" data-id="${t.id}">
+      <div class="chk ${t.done ? 'on' : ''}" data-a="t" role="button" aria-label="Mark done">${t.done ? '✓' : ''}</div>
+      <div class="tt">${esc(t.text)}</div>
+      <span class="tag">${t.priority.toUpperCase()}</span><span class="tag">${t.time}</span>
+      <button class="x" data-a="d" aria-label="Delete task">✕</button>
+    </div>`).join('') : `<div class="empty">No tasks yet. Add your first one above — priority first, timing second.</div>`;
+}
+$('tList').addEventListener('click', e => {
+  const a = e.target.closest('[data-a]'); if(!a) return;
+  const id = a.closest('.task').dataset.id, t = state.tasks.find(x => x.id === id);
+  if(a.dataset.a === 't'){ t.done = !t.done; save(); if(t.done) addXP(12); }
+  else state.tasks = state.tasks.filter(x => x.id !== id);
+  save(); renderTasks(); renderHome(); renderCal();
+});
+const WIN = [['morning','Morning (6–11am)'],['afternoon','Afternoon (12–4pm)'],['evening','Evening (5–8pm)'],['night','Late night (9pm+)']];
+function renderPick(){
+  $('tPick').innerHTML = WIN.map(([k,l]) => `<div class="tp ${state.peakTime === k ? 'on' : ''}" data-k="${k}"><span>${l}</span></div>`).join('');
+}
+$('tPick').onclick = e => { const o = e.target.closest('.tp'); if(!o) return; state.peakTime = o.dataset.k; save(); renderPick(); };
+
+/* ============ CALENDAR ============ */
+const MON = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function renderCal(){
+  $('cTitle').textContent = MON[calM] + ' ' + calY;
+  const dates = new Set(state.tasks.map(t => t.date));
+  let h = ['S','M','T','W','T','F','S'].map(d => `<div class="dow">${d}</div>`).join('');
+  h += '<div></div>'.repeat(new Date(calY, calM, 1).getDay());
+  for(let d = 1, n = new Date(calY, calM + 1, 0).getDate(); d <= n; d++){
+    const s = new Date(calY, calM, d).toDateString();
+    h += `<div class="cd ${s === today() ? 't' : ''} ${dates.has(s) ? 'h' : ''}">${d}</div>`;
+  }
+  $('cGrid').innerHTML = h;
+}
+$('cPrev').onclick = () => { if(--calM < 0){ calM = 11; calY--; } renderCal(); };
+$('cNext').onclick = () => { if(++calM > 11){ calM = 0; calY++; } renderCal(); };
+
+/* ============ FOCUS TIMER ============ */
+let total = 1500, left = 1500, phase = 'idle';   // idle | focus | paused | break
+let endAt = 0, tick = null, breakUsed = false, breakLeft = 0, breakTotal = 300;
+let awayAt = 0, awayTimer = null;
+const TC = 2 * Math.PI * 120;
+const QUOTES = ["\"You don't need more willpower. You need a shorter runway to a real break.\"","\"Fatigue isn't failure — it's data. Rest, then return.\"","\"Small sprint, real break, repeat. That's the whole system.\"","\"The goal isn't to never get tired. It's to recover fast when you do.\""];
+const fmt = s => String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
+const remaining = () => Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+
+function drawTimer(){
+  const br = phase === 'break';
+  $('tTime').textContent = fmt(br ? breakLeft : left);
+  $('tFg').style.strokeDashoffset = TC - (br ? breakLeft / breakTotal : left / total) * TC;
+  $('tFg').style.stroke = br ? '#FF8A3D' : '#4ECDC4';
+  $('tPhase').textContent = {idle:'Ready', focus:'Focusing', paused:'Paused', 'break':'On break'}[phase];
+  $('tGo').textContent = {idle:'Start', focus:'Pause', paused:'Resume', 'break':'End break'}[phase];
+  $('tBrk').disabled = !(phase === 'focus' && !breakUsed);
+  $('tBrk').textContent = breakUsed ? 'Break used' : 'Take a break';
+  document.querySelectorAll('.chip').forEach(c => c.disabled = phase !== 'idle');
+  try{ if(window.Android) Android.setState(phase, breakUsed, Math.max(0, Math.round((total - left) / 60))); }catch(e){}
+}
+function loop(){
+  clearInterval(tick);
+  tick = setInterval(() => {
+    if(phase === 'focus'){ left = remaining(); drawTimer(); if(left <= 0) completeSession(); }
+    else if(phase === 'break'){ breakLeft = remaining(); drawTimer(); if(breakLeft <= 0) endBreak(); }
+  }, 500);
+}
+function beginFocus(){ phase = 'focus'; endAt = Date.now() + left * 1000; loop(); drawTimer(); }
+function completeSession(){
+  clearInterval(tick); phase = 'idle'; left = total; breakUsed = false;
+  $('dModal').classList.remove('on');
+  state.energy = Math.min(100, state.energy + 22); state.focusSessions++;
+  addXP(20); drawTimer(); $('tPhase').textContent = 'Session complete';
+  nudge("Session complete", "Nice work. Take a real break before the next one.");
+}
+function takeBreak(){
+  if(phase !== 'focus' || breakUsed) return;
+  left = Math.max(1, remaining()); breakUsed = true;
+  breakTotal = breakLeft = Math.max(60, Math.round(total / 5 / 60) * 60);
+  phase = 'break'; endAt = Date.now() + breakLeft * 1000;
+  $('dModal').classList.remove('on'); loop(); drawTimer();
+}
+function endBreak(){
+  clearInterval(tick);
+  if(document.hidden) nudge("Break's over", "Come back and finish your sprint.");
+  beginFocus();
+}
+$('tGo').onclick = () => {
+  if(phase === 'idle'){
+    breakUsed = false;
+    $('quote').textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    if('Notification' in window && Notification.permission === 'default'){ try{ Notification.requestPermission(); }catch(e){} }
+    beginFocus();
+  }else if(phase === 'focus'){ left = remaining(); clearInterval(tick); phase = 'paused'; drawTimer(); }
+  else if(phase === 'paused') beginFocus();
+  else if(phase === 'break') endBreak();
+};
+$('tBrk').onclick = takeBreak;
+window.navaaTakeBreak = () => takeBreak();
+$('tRst').onclick = () => { clearInterval(tick); phase = 'idle'; left = total; breakUsed = false; $('dModal').classList.remove('on'); drawTimer(); };
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+  if(phase !== 'idle') return;
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('on')); c.classList.add('on');
+  total = left = +c.dataset.m * 60; drawTimer();
+});
+
+/* ---- mid-focus reminders: only while a focus session is running ---- */
+function nudge(title, body){
+  if('Notification' in window && Notification.permission === 'granted'){ try{ new Notification(title, {body}); }catch(e){} }
+}
+function awayNudge(){
+  if(phase !== 'focus') return;
+  nudge("You're mid-focus", fmt(remaining()) + " left in your sprint. Come back and finish it.");
+}
+function showReminder(){
+  if(phase !== 'focus') return;
+  left = remaining(); drawTimer();
+  const m = Math.max(1, Math.round((total - left) / 60));
+  $('dText').textContent = "You're " + m + " minute" + (m === 1 ? "" : "s") + " into a focus session. Opening other apps now usually turns into 40 minutes gone. Head back and finish the sprint.";
+  $('dBreak').disabled = breakUsed;
+  $('dBreak').textContent = breakUsed ? 'Break already used' : 'Take a break';
+  $('dModal').classList.add('on');
+}
+function leave(){
+  if(window.Android || phase !== 'focus' || awayAt) return;
+  awayAt = Date.now();
+  awayTimer = setTimeout(() => { awayNudge(); awayTimer = setInterval(awayNudge, 30000); }, 8000);
+}
+function back(){
+  clearTimeout(awayTimer); clearInterval(awayTimer);
+  const was = awayAt; awayAt = 0;
+  if(phase === 'focus' && was && Date.now() - was > 5000) showReminder();
+}
+document.addEventListener('visibilitychange', () => document.hidden ? leave() : back());
+window.addEventListener('blur', leave);
+window.addEventListener('focus', back);
+window.addEventListener('beforeunload', e => { if(phase === 'focus'){ e.preventDefault(); e.returnValue = ''; } });
+$('dStay').onclick = () => $('dModal').classList.remove('on');
+$('dBreak').onclick = takeBreak;
+
+/* ============ PROGRESS ============ */
+function renderProgress(){
+  $('lBadge').textContent = state.level; $('lNum').textContent = state.level;
+  $('lName').textContent = LEVELS[Math.min(state.level - 1, 9)];
+  $('xpN').textContent = state.xp; $('xpBar').style.width = state.xp + '%';
+  let h = '';
+  for(let i = 1; i <= 10; i++){
+    const c = i < state.level ? 'd' : i === state.level ? 'c' : '';
+    h += `<div class="pn ${c}"><div class="pc2">${c === 'd' ? '✓' : i}</div><div><b>Level ${i} — ${LEVELS[i-1]}</b><span>${c === 'd' ? 'Completed' : c === 'c' ? (100 - state.xp) + ' XP to go' : 'Locked'}</span></div></div>`;
+  }
+  $('path').innerHTML = h;
+}
+
+/* ============ WINS ============ */
+const BADGES = [
+  ['✅','First Step','Complete your first task', s => s.tasks.some(t => t.done)],
+  ['🔥','3-Day Streak','Show up 3 days in a row', () => streak() >= 3],
+  ['🏆','Full Week','7-day streak', () => streak() >= 7],
+  ['🎯','Five Sprints','Complete 5 focus sessions', s => s.focusSessions >= 5],
+  ['⭐','Halfway There','Reach level 5', s => s.level >= 5],
+  ['🌙','Night Recovery','Finish a late-night task', s => s.tasks.some(t => t.done && t.time === 'night')],
+  ['🌅','Early Riser','Finish a morning task', s => s.tasks.some(t => t.done && t.time === 'morning')],
+  ['📋','Ten Down','Complete 10 tasks total', s => s.tasks.filter(t => t.done).length >= 10]
+];
+function renderWins(){
+  let h = '';
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(Date.now() - i * DAY), lit = state.streakDays.includes(d.toDateString());
+    h += `<div class="sd ${lit ? 'l' : ''}"><span>${lit ? '🔥' : '·'}</span><span>${d.toLocaleDateString(undefined,{weekday:'short'}).slice(0,2)}</span></div>`;
+  }
+  $('streak').innerHTML = h;
+  $('badges').innerHTML = BADGES.map(b => `<div class="card badge ${b[3](state) ? 'u' : ''}"><div class="bi">${b[0]}</div><h4>${b[1]}</h4><p>${b[2]}</p></div>`).join('');
+}
+
+/* ============ COMMUNITY ============ */
+const SEED = [
+  ['George','#FF8A3D','2 min ago',"stuck staring at his screen after a long call, couldn't restart the report.",'post-call fog'],
+  ['Rohit','#4ECDC4','11 min ago','hit his usual 3:45 slump mid-internship and almost opened five tabs of nothing.','3:45 slump'],
+  ['Farida','#FF5470','19 min ago','made three small errors during the lunch rush from running on no real break.','lunch rush'],
+  ['Maya','#9296AC','26 min ago','reread the same paragraph five times before switching to a 5-minute reset.','reread loop'],
+  ['Aiko','#4ECDC4','41 min ago','skipped breakfast, crashed by 10am, and is recovering with a short walk.','skipped meal']
+];
+function renderMoments(){
+  const all = [...state.moments.map(m => ['You (anon)','#FF8A3D','just now',m,'just shared']), ...SEED];
+  $('moments').innerHTML = all.map(m => `<div class="card"><div class="mt"><div class="av" style="background:${m[1]}">${esc(m[0][0])}</div><div><b>${esc(m[0])}</b><span>${m[2]}</span></div></div><div class="mx">${esc(m[3])}</div><span class="mtag">${esc(m[4])}</span></div>`).join('');
+}
+$('mPost').onclick = () => {
+  const t = $('mIn').value.trim(); if(!t) return;
+  state.moments.unshift(t); $('mIn').value = ''; save(); renderMoments();
+};
+
+/* ============ PREMIUM ============ */
+const PLANS = {m:['₹99','/month','Billed monthly, cancel anytime'], q:['₹249','/3 months','≈ ₹83/month · billed every 3 months'], y:['₹799','/year','≈ ₹67/month · billed once a year, best value']};
+$('bt').onclick = e => {
+  const o = e.target.closest('.bo'); if(!o) return;
+  document.querySelectorAll('.bo').forEach(b => b.classList.remove('on')); o.classList.add('on');
+  const p = PLANS[o.dataset.p];
+  $('pAmt').innerHTML = p[0] + '<small>' + p[1] + '</small>'; $('pSub').textContent = p[2];
+};
+$('pCta').onclick = () => { $('pCta').textContent = "You're on the list ✓"; };
+
+/* ============ INIT ============ */
+renderHome(); renderTasks(); renderPick(); renderCal(); renderProgress(); renderWins(); renderMoments(); drawTimer();
+setInterval(renderHome, 60000);
+})();
+</script>
+</body>
+</html>
