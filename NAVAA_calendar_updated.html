@@ -996,6 +996,20 @@ $("quickRecharge").addEventListener("click",()=>{setFocusMode(5,"Quick reset");s
 let timerDuration=25*60,timerRemaining=timerDuration,timerRunning=false,timerInterval=null;
 let currentModeName="Focus sprint";
 const circumference=2*Math.PI*90;
+function syncDesktopFocusState() {
+  if (!window.Android || typeof window.Android.setState !== "function") return;
+
+  const elapsedMinutes = Math.max(
+    0,
+    Math.floor((timerDuration - timerRemaining) / 60)
+  );
+
+  window.Android.setState(
+    timerRunning ? "focus" : "idle",
+    false,
+    elapsedMinutes
+  );
+}
 function drawTimer(){
   const mins=Math.floor(timerRemaining/60),secs=timerRemaining%60;
   $("timerTime").textContent=`${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
@@ -1006,6 +1020,7 @@ function drawTimer(){
   $("timerStart").textContent=timerRunning?"Ⅱ Pause session":timerRemaining===0?"↻ Start again":"▶ Start session";
   $("sessionMode").textContent=currentModeName;
   $("sessionLength").textContent=`${Math.round(timerDuration/60)} minutes`;
+  syncDesktopFocusState();
 }
 function setFocusMode(minutes,name){
   clearInterval(timerInterval);timerInterval=null;timerRunning=false;
