@@ -24,7 +24,7 @@ jobs:
           node-version: 20
 
       - name: Copy NAVAA interface
-        run: node -e "require('fs').copyFileSync('../NAVAA_calendar_updated.html', 'index.html')"
+        run: node -e "require('fs').copyFileSync('NAVAA_calendar_updated.html', 'navaa-desktop/index.html')"
 
       - name: Copy NAVAA interface
         run: node -e "require('fs').copyFileSync('NAVAA_calendar_updated.html', 'navaa-desktop/index.html')"
