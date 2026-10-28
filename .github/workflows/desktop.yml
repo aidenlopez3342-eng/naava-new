@@ -1,31 +1,41 @@
-name: Build Desktop
+name: Build NAVAA Windows
+
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['navaa-desktop/**']
+    paths:
+      - 'navaa-desktop/**'
+      - 'NAVAA_calendar_updated.html'
+      - '.github/workflows/desktop.yml'
+
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: navaa-desktop
+  build-windows:
+    runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npm run dist
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-      - uses: actions/upload-artifact@v4
+
+      - name: Copy NAVAA interface
+        run: node -e "require('fs').copyFileSync('NAVAA_calendar_updated.html', 'navaa-desktop/index.html')"
+
+      - name: Install dependencies
+        working-directory: navaa-desktop
+        run: npm install
+
+      - name: Build Windows installer
+        working-directory: navaa-desktop
+        run: npm run dist
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
         with:
-          name: NAVAA-${{ matrix.os }}
-          path: |
-            navaa-desktop/dist/*.exe
-            navaa-desktop/dist/*.zip
+          name: NAVAA-Windows
+          path: navaa-desktop/dist/*
+          if-no-files-found: error
