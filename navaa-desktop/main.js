@@ -15,6 +15,7 @@ let state = {
   mins: 0
 };
 
+// Create the main NAVAA window.
 function createWindow() {
   win = new BrowserWindow({
     width: 1200,
@@ -28,9 +29,16 @@ function createWindow() {
   });
 
   win.setMenuBarVisibility(false);
+
   win.loadFile(path.join(__dirname, 'index.html'));
 
-  win.webContents.on('will-prevent-unload', (e) => e.preventDefault());
+  win.webContents.on('will-prevent-unload', (event) => {
+    event.preventDefault();
+  });
+
+  win.webContents.on('did-fail-load', (_event, code, description) => {
+    console.error('NAVAA failed to load:', code, description);
+  });
 
   win.on('closed', () => {
     win = null;
@@ -38,49 +46,68 @@ function createWindow() {
   });
 }
 
+// HTML displayed by the focus overlay.
 function overlayHtml() {
-  const m = Math.max(1, state.mins);
+  const minutes = Math.max(0, Number(state.mins) || 0);
   const used = state.breakUsed;
 
-  const btn =
+  const buttonStyle =
     'width:100%;padding:14px;border:0;border-radius:12px;' +
     'font-size:15px;font-weight:600;margin-top:10px;cursor:pointer;';
 
-  return '<!doctype html><meta charset="utf-8"><body style="' +
+  return (
+    '<!doctype html>' +
+    '<html><head><meta charset="utf-8"></head>' +
+    '<body style="' +
     'margin:0;height:100vh;display:flex;align-items:center;' +
-    'justify-content:center;background:rgba(20,21,43,.9);' +
-    'font-family:system-ui,sans-serif;color:#F7F5F0">' +
-    '<div style="background:#1D1E3B;border-radius:20px;padding:32px;' +
-    'max-width:400px;width:90%;text-align:center">' +
-    '<div style="font-size:42px">⏸</div>' +
-    '<h2 style="margin:10px 0 8px">Hold on — you\'re mid-focus</h2>' +
-    '<p style="color:#9296AC;line-height:1.5;margin:0 0 20px">You\'re ' +
-    m + ' minute' + (m === 1 ? '' : 's') +
-    ' into a focus session. Is this site worth interrupting your focus?</p>' +
-    '<button onclick="navaa.act(\'back\')" style="' + btn +
-    'background:#FF8A3D;color:#14152B">Go back</button>' +
+    'justify-content:center;background:rgba(20,21,43,.94);' +
+    'font-family:system-ui,sans-serif;color:#F7F5F0;">' +
+
+    '<div style="' +
+    'background:#1D1E3B;border-radius:20px;padding:32px;' +
+    'max-width:400px;width:85%;text-align:center;">' +
+
+    '<div style="font-size:42px;">⏸</div>' +
+
+    '<h2 style="margin:10px 0 8px;">Hold on — you’re mid-focus</h2>' +
+
+    '<p style="color:#9296AC;line-height:1.5;margin:0 0 20px;">' +
+    'You’re ' + minutes + ' minute' + (minutes === 1 ? '' : 's') +
+    ' into a focus session. Is this site worth interrupting your focus?' +
+    '</p>' +
+
+    '<button onclick="navaa.act(\'back\')" style="' +
+    buttonStyle +
+    'background:#FF8A3D;color:#14152B;">Go back</button>' +
+
     '<button ' + (used ? 'disabled' : '') +
-    ' onclick="navaa.act(\'break\')" style="' + btn +
+    ' onclick="navaa.act(\'break\')" style="' +
+    buttonStyle +
     'background:#262848;color:#F7F5F0;' +
-    (used ? 'opacity:.5;cursor:not-allowed' : '') + '">' +
+    (used ? 'opacity:.5;cursor:not-allowed;' : '') +
+    '">' +
     (used ? 'Break already used' : 'Take a break') +
-    '</button></div></body>';
+    '</button>' +
+
+    '</div></body></html>'
+  );
 }
 
+// Display the overlay above other windows.
 function showOverlay() {
   if (overlay && !overlay.isDestroyed()) {
-    overlay.show();
     overlay.setAlwaysOnTop(true, 'screen-saver');
+    overlay.show();
     return;
   }
 
-  const b = screen.getPrimaryDisplay().bounds;
+  const bounds = screen.getPrimaryDisplay().bounds;
 
   overlay = new BrowserWindow({
-    x: b.x,
-    y: b.y,
-    width: b.width,
-    height: b.height,
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -94,26 +121,36 @@ function showOverlay() {
   });
 
   overlay.setAlwaysOnTop(true, 'screen-saver');
-  overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+  overlay.setVisibleOnAllWorkspaces(true, {
+    visibleOnFullScreen: true
+  });
 
   overlay.on('closed', () => {
     overlay = null;
   });
 
   overlay.loadURL(
-    'data:text/html;charset=utf-8,' + encodeURIComponent(overlayHtml())
-  );
+    'data:text/html;charset=utf-8,' +
+    encodeURIComponent(overlayHtml())
+  ).catch((error) => {
+    console.error('NAVAA overlay failed to load:', error);
+  });
 }
 
+// Close the overlay safely.
 function hideOverlay() {
   if (overlay && !overlay.isDestroyed()) {
     overlay.destroy();
   }
+
   overlay = null;
 }
 
+// Detect whether the active desktop window is distracting.
 async function check() {
   if (checking) return;
+
   checking = true;
 
   try {
@@ -122,45 +159,71 @@ async function check() {
       return;
     }
 
-    const activeWindow = (await import('active-win')).default;
-    const w = await activeWindow();
+    const activeWindowModule = await import('active-win');
+    const activeWindow = activeWindowModule.default;
 
-    if (!w) return;
+    if (typeof activeWindow !== 'function') {
+      console.error('NAVAA: active-win did not provide a function.');
+      return;
+    }
 
-    if (w.owner && w.owner.processId === process.pid) return;
+    const active = await activeWindow();
 
-    const text =
-      ((w.owner && w.owner.name) || '') + ' ' + (w.title || '');
+    if (!active) return;
 
-    if (BAD.test(text)) {
+    // Ignore NAVAA's own windows.
+    if (
+      active.owner &&
+      active.owner.processId === process.pid
+    ) {
+      return;
+    }
+
+    const windowText =
+      ((active.owner && active.owner.name) || '') +
+      ' ' +
+      (active.title || '');
+
+    if (BAD.test(windowText)) {
       showOverlay();
     } else {
       hideOverlay();
     }
-  } catch (e) {
-    console.error('NAVAA window detection failed:', e);
+  } catch (error) {
+    console.error('NAVAA window detection failed:', error);
   } finally {
     checking = false;
   }
 }
 
+// Start checking the active window.
 function startWatch() {
-  if (!watch) {
-    watch = setInterval(check, 1500);
+  if (watch) return;
+
+  watch = setInterval(() => {
     check();
-  }
+  }, 1500);
+
+  check();
 }
 
+// Stop checking and remove the overlay.
 function stopWatch() {
   if (watch) {
     clearInterval(watch);
     watch = null;
   }
+
   hideOverlay();
 }
 
-ipcMain.on('state', (_e, phase, breakUsed, mins) => {
-  state = { phase, breakUsed, mins };
+// Receive focus-session updates from the NAVAA interface.
+ipcMain.on('state', (_event, phase, breakUsed, mins) => {
+  state = {
+    phase,
+    breakUsed: Boolean(breakUsed),
+    mins: Number(mins) || 0
+  };
 
   if (phase === 'idle') {
     stopWatch();
@@ -169,35 +232,55 @@ ipcMain.on('state', (_e, phase, breakUsed, mins) => {
   }
 });
 
-ipcMain.on('act', (_e, action) => {
+// Handle overlay button clicks.
+ipcMain.on('act', (_event, action) => {
   if (action === 'back') {
     hideOverlay();
 
-    if (win) {
-      if (win.isMinimized()) win.restore();
+    if (win && !win.isDestroyed()) {
+      if (win.isMinimized()) {
+        win.restore();
+      }
+
       win.show();
       win.focus();
     }
-  } else if (
+  }
+
+  if (
     action === 'break' &&
     !state.breakUsed &&
     state.phase === 'focus'
   ) {
     state.phase = 'break';
     state.breakUsed = true;
+
     hideOverlay();
 
-    if (win) {
+    if (win && !win.isDestroyed()) {
       win.webContents.executeJavaScript(
-        'window.navaaTakeBreak && navaaTakeBreak()'
-      ).catch(() => {});
+        'window.navaaTakeBreak && window.navaaTakeBreak()'
+      ).catch((error) => {
+        console.error('NAVAA break action failed:', error);
+      });
     }
   }
 });
 
-app.whenReady().then(createWindow);
+// Report startup errors instead of silently failing.
+app.whenReady()
+  .then(() => {
+    createWindow();
+  })
+  .catch((error) => {
+    console.error('NAVAA failed to start:', error);
+  });
 
 app.on('window-all-closed', () => {
   app.quit();
+});
+
+app.on('before-quit', () => {
+  stopWatch();
 });
 ```
