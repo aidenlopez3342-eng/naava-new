@@ -1,3 +1,4 @@
+```yaml
 name: Build NAVAA Windows
 
 on:
@@ -18,16 +19,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Node.js
-      
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Copy NAVAA interface
-        run: node -e "require('fs').copyFileSync('NAVAA_calendar_updated.html', 'navaa-desktop/index.html')"
+      - name: Verify source files
+        run: |
+          if (!(Test-Path "NAVAA_calendar_updated.html")) { throw "Root HTML file missing" }
+          if (!(Test-Path "navaa-desktop/main.js")) { throw "main.js missing" }
+          Write-Host "Source files found."
 
       - name: Copy NAVAA interface
         run: node -e "require('fs').copyFileSync('NAVAA_calendar_updated.html', 'navaa-desktop/index.html')"
+
+      - name: Verify desktop entry file
+        working-directory: navaa-desktop
+        run: node --check main.js
 
       - name: Install dependencies
         working-directory: navaa-desktop
@@ -43,3 +50,4 @@ jobs:
           name: NAVAA-Windows
           path: navaa-desktop/dist/*
           if-no-files-found: error
+```
