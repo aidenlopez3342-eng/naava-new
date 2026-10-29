@@ -5,7 +5,9 @@
   "author": "NAVAA",
   "main": "main.js",
   "scripts": {
-    "dist": "electron-builder --publish never"
+    "start": "electron .",
+    "dist": "electron-builder --publish never",
+    "build:mac": "electron-builder --mac --publish never"
   },
   "dependencies": {
     "active-win": "8.2.1"
@@ -18,19 +20,26 @@
     "appId": "com.navaa.desktop",
     "productName": "NAVAA",
     "files": [
-  "main.js",
-  "preload.js",
-  "index.html",
-  "package.json",
-  "node_modules/**/*"
-],
-    "asarUnpack": ["node_modules/active-win/**"],
+      "main.js",
+      "preload.js",
+      "index.html",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/active-win/**"
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }]
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ]
     },
     "mac": {
       "identity": null,
-      "target": [{ "target": "zip", "arch": ["x64", "arm64"] }]
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ]
     }
   }
 }
