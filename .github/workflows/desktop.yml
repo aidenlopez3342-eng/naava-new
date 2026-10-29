@@ -3,12 +3,6 @@ name: Build NAVAA Windows
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'navaa-desktop/**'
-      - 'NAVAA_calendar_updated.html'
-      - '.github/workflows/desktop.yml'
 
 jobs:
   build-windows:
@@ -24,15 +18,17 @@ jobs:
           node-version: 20
 
       - name: Verify source files
+        shell: pwsh
         run: |
           if (!(Test-Path "NAVAA_calendar_updated.html")) { throw "Root HTML file missing" }
           if (!(Test-Path "navaa-desktop/main.js")) { throw "main.js missing" }
           Write-Host "Source files found."
 
       - name: Copy NAVAA interface
+        shell: pwsh
         run: node -e "require('fs').copyFileSync('NAVAA_calendar_updated.html', 'navaa-desktop/index.html')"
 
-      - name: Verify desktop entry file
+      - name: Check JavaScript syntax
         working-directory: navaa-desktop
         run: node --check main.js
 
