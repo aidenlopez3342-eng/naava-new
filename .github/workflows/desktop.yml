@@ -1,4 +1,3 @@
-```yaml
 name: Build NAVAA Windows
 
 on:
@@ -7,7 +6,6 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,7 +23,6 @@ jobs:
           Write-Host "Source files found."
 
       - name: Copy NAVAA interface
-        shell: pwsh
         run: node -e "require('fs').copyFileSync('NAVAA_calendar_updated.html', 'navaa-desktop/index.html')"
 
       - name: Check JavaScript syntax
@@ -46,4 +43,3 @@ jobs:
           name: NAVAA-Windows
           path: navaa-desktop/dist/*
           if-no-files-found: error
-```
